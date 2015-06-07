@@ -17,48 +17,44 @@ Features
 - Get tweet by id
 - Edit tweet
 - Delete tweet
-- Using sqlalchemy for database
-- Using httpauth for authenticate
+- Using SQLAlchemy for database
+- Using HTTPAauth for authenticate
 - Using passlib for safer hash password
 
 Installation
 ------------
 
-First you must install virtualenv and flask to run flask apps.
-See http://flask.pocoo.org/docs/0.10/installation/
-
-Also you have to install dependency libraries, `flask-sqlalchemy`, `flask-httpauth`, and `passlib`
-
-Run the web service:
-
-    $ python ./app.py
+- Install Python 2.7 and git.
+- Run `setup.sh` (Linux, OS X, Cygwin) or `setup.bat` (Windows)
+- Run `./app.py` to start the server (on Windows use `flask\Scripts\python app.py` instead)
 
 Curl Usage
 ----------
 
+
 Register:
 
-    $ curl -i -X POST -H "Content-Type: application/json" -d '{"username":"ujang","password":"python"}' http://127.0.0.1:5000/api/users
+    $ curl -i -X POST -H "Content-Type: application/json" -d '{"username":"foo","password":"bar"}' http://127.0.0.1:5000/api/users
 
 Post a tweet:
 
-    $ curl -u ujang:python -i -X POST -H "Content-Type: application/json" -d '{"tweet":"ini tweet pertamaku"}' http://127.0.0.1:5000/api/tweet
+    $ curl -u ujang:python -i -X POST -H "Content-Type: application/json" -d '{"tweet":"foo and bar"}' http://127.0.0.1:5000/api/tweet
 
-Get all tweet:
+Get all tweets:
 
     $ curl -i -X GET -H "Content-Type: application/json" http://127.0.0.1:5000/api/tweet
 
 Search tweets:
 
-    $ curl -i -X POST -H "Content-Type: application/json" http://127.0.0.1:5000/api/search/q=perta
-
+    $ curl -i -X POST -H "Content-Type: application/json" http://127.0.0.1:5000/api/search/q=foo
+    
 Get tweet by id:
 
     $ curl -i -X GET -H "Content-Type: application/json" http://127.0.0.1:5000/api/tweet/1
 
 Edit tweet:
 
-    $ curl -u ujang:python -i -X PATCH -H "Content-Type: application/json" -d '{"tweet":"tweet ini sudah disunting"}' http://127.0.0.1:5000/api/tweet/1
+    $ curl -u ujang:python -i -X PATCH -H "Content-Type: application/json" -d '{"tweet":"bar run over the foo"}' http://127.0.0.1:5000/api/tweet/1
 
 Delete tweet:
 
