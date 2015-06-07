@@ -31,14 +31,13 @@ Installation
 Curl Usage
 ----------
 
-
 Register:
 
-    $ curl -i -X POST -H "Content-Type: application/json" -d '{"username":"foo","password":"bar"}' http://127.0.0.1:5000/api/users
+    $ curl -i -X POST -H "Content-Type: application/json" -d '{"username":"john","password":"doe"}' http://127.0.0.1:5000/api/users
 
 Post a tweet:
 
-    $ curl -u ujang:python -i -X POST -H "Content-Type: application/json" -d '{"tweet":"foo and bar"}' http://127.0.0.1:5000/api/tweet
+    $ curl -u john:doe -i -X POST -H "Content-Type: application/json" -d '{"tweet":"foo and bar"}' http://127.0.0.1:5000/api/tweet
 
 Get all tweets:
 
@@ -54,8 +53,8 @@ Get tweet by id:
 
 Edit tweet:
 
-    $ curl -u ujang:python -i -X PATCH -H "Content-Type: application/json" -d '{"tweet":"bar run over the foo"}' http://127.0.0.1:5000/api/tweet/1
+    $ curl -u john:doe -i -X PATCH -H "Content-Type: application/json" -d '{"tweet":"bar run over the foo"}' http://127.0.0.1:5000/api/tweet/1
 
 Delete tweet:
 
-    $ curl -u ujang:python -i -X DELETE -H "Content-Type: application/json" http://127.0.0.1:5000/api/tweet/1
+    $ curl -u john:doe -i -X DELETE -H "Content-Type: application/json" http://127.0.0.1:5000/api/tweet/1
