@@ -24,10 +24,14 @@ Features
 Installation
 ------------
 
-First you must install virtualenv and flask to run flask programs.
+First you must install virtualenv and flask to run flask apps.
 See http://flask.pocoo.org/docs/0.10/installation/
 
 Also you have to install dependency libraries, `flask-sqlalchemy`, `flask-httpauth`, and `passlib`
+
+Run the web service:
+
+    $ python ./app.py
 
 Curl Usage
 ----------
