@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ini ceritaku, mana ceritamu'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-app.config['SERVER_NAME'] = '0.0.0.0:5000'
+app.config['SERVER_NAME'] = '0.0.0.0:4000'
 
 # extensions
 db = SQLAlchemy(app)
@@ -42,7 +42,6 @@ class User(db.Model):
     def generate_auth_token(self, expiration = 600):
         s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
         return s.dumps({ 'id': self.id })
-
 
     @staticmethod
     def verify_auth_token(token):
@@ -97,7 +96,7 @@ def new_user():
     if username is None or password is None:
         abort(400)    # missing arguments
     if User.query.filter_by(username=username).first() is not None:
-        abort(400)    # existing user
+        return jsonify({'taken':username}), 400    # existing user
     user = User(username=username)
     user.hash_password(password)
     db.session.add(user)
@@ -135,7 +134,7 @@ def post_logout():
     session.pop(g.user.id)
     return jsonify({'logout':'OK'})
 
-@app.route('/api/tweet/search/q=<query>', methods=['GET'])
+@app.route('/api/tweet/search/<query>', methods=['GET'])
 def get_search(query):
     tweet = session.connection().execute(session.query(Tweet).filter(Tweet.tweet.op('(.*?)'+query+'(.*?)')(REGEX)))
     return jsonify({'tweets': tweet})
