@@ -10,7 +10,7 @@ Features
 
 - Basic support of RESTful APIs
 - Register
-- Authentication
+- Authentication (by password per request or by token which will get session)
 - Post tweet
 - Get all tweet
 - Search tweets
@@ -20,6 +20,7 @@ Features
 - Using SQLAlchemy for database
 - Using HTTPAauth for authenticate
 - Using passlib for safer hash password
+- Using itsdangerous for token
 
 Installation
 ------------
@@ -31,30 +32,41 @@ Installation
 Curl Usage
 ----------
 
-Register:
-
-    $ curl -i -X POST -H "Content-Type: application/json" -d '{"username":"john","password":"doe"}' http://127.0.0.1:5000/api/users
-
-Post a tweet:
-
-    $ curl -u john:doe -i -X POST -H "Content-Type: application/json" -d '{"tweet":"foo and bar"}' http://127.0.0.1:5000/api/tweet
-
 Get all tweets:
 
-    $ curl -i -X GET -H "Content-Type: application/json" http://127.0.0.1:5000/api/tweet
+    $ curl -i -X GET http://127.0.0.1:5000/api/tweet
 
 Search tweets:
 
-    $ curl -i -X POST -H "Content-Type: application/json" http://127.0.0.1:5000/api/search/q=foo
+    $ curl -i -X GET http://127.0.0.1:5000/api/search/foo
     
 Get tweet by id:
 
-    $ curl -i -X GET -H "Content-Type: application/json" http://127.0.0.1:5000/api/tweet/1
+    $ curl -i -X GET http://127.0.0.1:5000/api/tweet/1
+
+Register:
+
+    $ curl -i -X POST -H "Content-Type: application/json" -d '{"username":"john","password":"doe"}' http://127.0.0.1:5000/api/users
+    
+Login:
+
+    $ curl -u john:doe -i -X POST http://127.0.0.1:5000/api/login
+    
+Login will return JSON {"duration": 600, "token": "`foo`"}
+`foo` used by below methods within the duration (600 second)
+    
+Logout:
+
+    $ curl -i -X POST -H "X-CSRF-Token: foo" http://127.0.0.1:5000/api/logout
+
+Post a tweet:
+
+    $ curl -i -X POST -H "X-CSRF-Token: foo" -H "Content-Type: application/json" -d '{"tweet":"bar and baz"}' http://127.0.0.1:5000/api/tweet
 
 Edit tweet:
 
-    $ curl -u john:doe -i -X PATCH -H "Content-Type: application/json" -d '{"tweet":"bar run over the foo"}' http://127.0.0.1:5000/api/tweet/1
+    $ curl -i -X PATCH -H "X-CSRF-Token: foo" -H "Content-Type: application/json" -d '{"tweet":"baz run over the qux"}' http://127.0.0.1:5000/api/tweet/1
 
 Delete tweet:
 
-    $ curl -u john:doe -i -X DELETE -H "Content-Type: application/json" http://127.0.0.1:5000/api/tweet/1
+    $ curl -i -X DELETE -H "X-CSRF-Token: foo" http://127.0.0.1:5000/api/tweet/1
