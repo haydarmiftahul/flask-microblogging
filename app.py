@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ini ceritaku, mana ceritamu'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-app.config['SERVER_NAME'] = '0.0.0.0:4000'
+app.config['SERVER_NAME'] = '0.0.0.0:5000'
 
 # extensions
 db = SQLAlchemy(app)
