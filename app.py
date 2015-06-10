@@ -2,16 +2,19 @@
 
 import os, json
 from datetime import datetime
-from flask import Flask, abort, request, jsonify, g, url_for
+from flask import Flask, abort, request, jsonify, g, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.httpauth import HTTPBasicAuth
 from passlib.apps import custom_app_context as pwd_context
+from itsdangerous import (TimedJSONWebSignatureSerializer
+                          as Serializer, BadSignature, SignatureExpired)
 
 # initialization
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
+app.config['SECRET_KEY'] = 'ini ceritaku, mana ceritamu'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
+app.config['SERVER_NAME'] = '0.0.0.0:5000'
 
 # extensions
 db = SQLAlchemy(app)
@@ -36,6 +39,27 @@ class User(db.Model):
             'username': self.username
         }
 
+    def generate_auth_token(self, expiration = 600):
+        s = Serializer(app.config['SECRET_KEY'], expires_in = expiration)
+        return s.dumps({ 'id': self.id })
+
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            session.pop(User.query.get(data['id']))
+            return None # valid token, but expired
+        except BadSignature:
+            session.pop(User.query.get(data['id']))
+            return None # invalid token
+        if data['id'] not in session:
+            return None # user not logged in to session yet
+        user = User.query.get(data['id'])
+        return user
+
 class Tweet(db.Model):
     __tablename__ = 'tweets'
     id = db.Column(db.Integer, primary_key=True)
@@ -51,11 +75,18 @@ class Tweet(db.Model):
         }
 
 @auth.verify_password
-def verify_password(username_or_token, password):
+def verify_password(username, password):
     # first try to authenticate by token
-    user = User.query.filter_by(username=username_or_token).first()
-    if not user or not user.verify_password(password):
-        return False
+    token = request.headers.get('X-CSRF-Token')
+    if token is None:
+        # try to authenticate with username
+        user = User.query.filter_by(username=username).first()
+        if not user or not user.verify_password(password):
+            return False
+    else:
+        user = User.verify_auth_token(token)
+        if user is None:
+            return False
     g.user = user
     return True
 
@@ -71,8 +102,7 @@ def new_user():
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
-    return (jsonify({'username': user.username}), 201,
-            {'Location': url_for('get_user', id=user.id, _external=True)})
+    return jsonify({'username': user.username}), 201
 
 @app.route('/api/users', methods=['GET'])
 def get_users():
@@ -91,6 +121,19 @@ def get_user(id):
     if not user:
         abort(400)
     return jsonify({'username': user.username})
+
+@app.route('/api/login', methods=['POST'])
+@auth.login_required
+def post_login():
+    token = g.user.generate_auth_token(600) # login for 600 seconds
+    session['id']=g.user.id
+    return jsonify({'token': token.decode('ascii'), 'duration': 600})
+
+@app.route('/api/logout', methods=['POST'])
+@auth.login_required
+def post_logout():
+    session.pop(g.user.id)
+    return jsonify({'logout':'OK'})
 
 @app.route('/api/tweet/search/q=<query>', methods=['GET'])
 def get_search(query):
@@ -125,8 +168,7 @@ def post_tweet():
     db.session.add(tw)
     db.session.commit()
     tw = tw.serialize()
-    return (jsonify({'tweet': tw}), 201,
-            {'Location': url_for('get_tweet', id=tweet.id, _external=True)})
+    return jsonify({'tweet': tw}), 201
 
 @app.route('/api/tweet/<int:id>', methods=['PATCH'])
 @auth.login_required
